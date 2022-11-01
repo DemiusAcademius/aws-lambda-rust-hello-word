@@ -12,4 +12,4 @@ jobs:
           toolchain: stable
           target: x86_64-unknown-linux-musl
           override: true
-      - run: cargo build --release --all-features --target x86_64-unknown-linux-musl
+      - run: cargo build --release --target x86_64-unknown-linux-musl
