@@ -10,7 +10,7 @@ Resources:
       Handler: bootstrap
       Runtime: provided.al2
       Description: Rust function
-      MemorySize: 128
+      MemorySize: 32
       Timeout: 10
       # Function's execution role
       Policies:
