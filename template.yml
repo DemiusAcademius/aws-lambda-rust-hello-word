@@ -6,7 +6,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: aws-lambda-rust-hello-word
-      CodeUri: build/distributions/aws-lambda-rust-hello-word-1.0.zip
+      CodeUri: lambda.zip
       Handler: bootstrap
       Runtime: provided.al2
       Description: Rust function
