@@ -21,8 +21,8 @@ jobs:
         run: |
           ls -la
           ls -la target
-          ls -la target/release
-          cp target/release/x86_64-unknown-linux-musl/aws-lambda-rust-hello-word ./bootstrap
+          ls -la target/x86_64-unknown-linux-musl
+          cp target/x86_64-unknown-linux-musl/release/aws-lambda-rust-hello-word ./bootstrap
           zip lambda.zip bootstrap
       - uses: aws-actions/setup-sam@v2
       - uses: aws-actions/configure-aws-credentials@v1
