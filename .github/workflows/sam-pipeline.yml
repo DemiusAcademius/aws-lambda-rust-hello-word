@@ -2,6 +2,9 @@ on:
   push:
     branches:
       - main
+permissions:
+  id-token: write # required to use OIDC authentication
+  contents: read # required to checkout the code from the repo       
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
