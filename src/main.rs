@@ -1,5 +1,5 @@
 use http::Response;
-use lambda_http::{run, http::StatusCode, service_fn, Error, IntoResponse, Request, RequestExt};
+use lambda_http::{http::StatusCode, run, service_fn, Error, IntoResponse, Request, RequestExt};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -20,10 +20,14 @@ pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error
     let response = Response::builder()
         .status(StatusCode::OK)
         .header("Content-Type", "application/json")
-        .body(json!({
-            "message": "Hello World",
-            "payload": body, 
-          }).to_string())
+        .body(
+            json!({
+              "message": "Hello World",
+              "payload": body,
+              "payload-exists": body.is_some()
+            })
+            .to_string(),
+        )
         .map_err(Box::new)?;
 
     Ok(response)
