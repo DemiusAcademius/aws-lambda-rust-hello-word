@@ -1,16 +1,36 @@
-use lambda_runtime::{service_fn, Error, LambdaEvent};
-use serde_json::{json, Value};
+use http::Response;
+use lambda_http::{run, http::StatusCode, service_fn, Error, IntoResponse, Request, RequestExt};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let func = service_fn(func);
-    lambda_runtime::run(func).await?;
-    Ok(())
+    tracing_subscriber::fmt()
+        .with_ansi(false)
+        .without_time()
+        .with_max_level(tracing_subscriber::filter::LevelFilter::INFO)
+        .init();
+
+    run(service_fn(function_handler)).await
 }
 
-async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
-    let (event, _context) = event.into_parts();
-    let first_name = event["firstName"].as_str().unwrap_or("world");
+pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
+    let body = event.payload::<MyPayload>()?;
 
-    Ok(json!({ "message": format!("Hello, {}!", first_name) }))
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .header("Content-Type", "application/json")
+        .body(json!({
+            "message": "Hello World",
+            "payload": body, 
+          }).to_string())
+        .map_err(Box::new)?;
+
+    Ok(response)
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct MyPayload {
+    pub prop1: String,
+    pub prop2: String,
 }
