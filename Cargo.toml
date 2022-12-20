@@ -21,6 +21,8 @@ lambda_http = "0.7"
 
 aws-config = "0.52"
 
+http = "0.2"
+
 # We are using the Amazon Simple Storage Service (Amazon S3) crate in this example,
 # but you can use any SDK crate in your Lambda code.
 aws-sdk-s3 = "0.22"
