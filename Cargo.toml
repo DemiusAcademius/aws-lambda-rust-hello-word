@@ -23,9 +23,13 @@ aws-config = "0.52"
 # We are using the Amazon Simple Storage Service (Amazon S3) crate in this example,
 # but you can use any SDK crate in your Lambda code.
 aws-sdk-s3 = "0.22"
-aws-sdk-cognitoidentityprovider = "0.22.0"
+aws-sdk-cognitoidentityprovider = "0.22"
+# Conversion of types from aws-smithy-types to other libraries.
+aws-smithy-types-convert = { version = "0.52", features = [
+  "convert-chrono",
+] }
 
 http = "0.2"
 # Parse command line argument by defining a struct.
-structopt = "0.3.26"
+structopt = "0.3"
 time = "0.3"

@@ -73,6 +73,7 @@ pub struct MyPayload {
 }
 
 use aws_sdk_cognitoidentityprovider::{Client, Region, PKG_VERSION};
+use aws_smithy_types_convert::date_time::DateTimeExt;
 
 // Lists your user pools.
 // snippet-start:[cognitoidentityprovider.rust.list-user-pools]
