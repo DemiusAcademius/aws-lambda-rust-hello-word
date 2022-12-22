@@ -108,6 +108,8 @@ async fn show_pools(client: &Client) -> Result<(), Error> {
             );
             println!();
         }
+    } else {
+        println!("User pools not exists");    
     }
     println!("Next token: {}", response.next_token().unwrap_or_default());
 
