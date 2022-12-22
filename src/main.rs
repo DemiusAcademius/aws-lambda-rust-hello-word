@@ -42,7 +42,7 @@ async fn main() -> Result<(), Error> {
     }
     */
 
-    let shared_config = aws_config::from_env().region(region_provider).load().await?
+    let shared_config = aws_config::from_env().region(region_provider).load().await?;
     let client = Client::new(&shared_config);
 
     let pool_id = show_pools(&client).await?;
@@ -109,13 +109,13 @@ async fn show_pools(client: &Client) -> Result<Option<String>, Error> {
                 pool.creation_date().unwrap().to_chrono_utc()
             );
             println!();
-            pool_id = pool.id();
+            pool_id = pool.id().to_string();
         }
     } else {
         println!("User pools not exists");    
     }
     println!("Next token: {}", response.next_token().unwrap_or_default());
 
-    Ok(first_pool_name)
+    Ok(pool_id)
 }
 // snippet-end:[cognitoidentityprovider.rust.list-user-pools]
