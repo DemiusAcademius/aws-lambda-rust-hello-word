@@ -44,10 +44,12 @@ async fn main() -> Result<(), Error> {
     let shared_config = aws_config::from_env().region(region_provider).load().await;
     let client = Client::new(&shared_config);
 
-    run(service_fn(|event|function_handler(event, &client))).await
+    show_pools(&client).await;
+
+    run(service_fn(function_handler)).await
 }
 
-pub async fn function_handler(event: Request, client: &Client) -> Result<impl IntoResponse, Error> {
+pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
     let body = event.payload::<MyPayload>()?;
 
     let response = Response::builder()
@@ -62,9 +64,6 @@ pub async fn function_handler(event: Request, client: &Client) -> Result<impl In
             .to_string(),
         )
         .map_err(Box::new)?;
-
-
-    show_pools(&client).await;
 
     Ok(response)
 }
