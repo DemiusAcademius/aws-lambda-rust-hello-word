@@ -1,6 +1,10 @@
 use aws_config::meta::region::RegionProviderChain;
-use http::Response;
+use aws_sdk_cognitoidentityprovider::{Client, Region, PKG_VERSION};
+use aws_smithy_types_convert::date_time::DateTimeExt;
+
 use lambda_http::{http::StatusCode, run, service_fn, Error, IntoResponse, Request, RequestExt};
+
+use http::Response;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use structopt::StructOpt;
@@ -40,7 +44,7 @@ async fn main() -> Result<(), Error> {
     let shared_config = aws_config::from_env().region(region_provider).load().await;
     let client = Client::new(&shared_config);
 
-    run(service_fn(|event|function_handler(event, client))).await
+    run(service_fn(|event|function_handler(event, &client))).await
 }
 
 pub async fn function_handler(event: Request, client: &Client) -> Result<impl IntoResponse, Error> {
@@ -61,7 +65,7 @@ pub async fn function_handler(event: Request, client: &Client) -> Result<impl In
 
 
     show_pools(&client).await;
-    
+
     Ok(response)
 }
 
@@ -82,9 +86,6 @@ pub struct MyPayload {
     pub prop1: String,
     pub prop2: String,
 }
-
-use aws_sdk_cognitoidentityprovider::{Client, Region, PKG_VERSION};
-use aws_smithy_types_convert::date_time::DateTimeExt;
 
 // Lists your user pools.
 // snippet-start:[cognitoidentityprovider.rust.list-user-pools]
