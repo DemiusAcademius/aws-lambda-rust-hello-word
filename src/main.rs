@@ -42,15 +42,15 @@ async fn main() -> Result<(), Error> {
     }
     */
 
-    let shared_config = aws_config::from_env().region(region_provider).load().await?;
+    let shared_config = aws_config::from_env().region(region_provider).load().await?
     let client = Client::new(&shared_config);
 
-    let pool_name = show_pools(&client).await?;
+    let pool_id = show_pools(&client).await?;
 
-    run(service_fn(|event: Request|function_handler(event, pool_name.clone()))).await
+    run(service_fn(|event: Request|function_handler(event, pool_id.clone()))).await
 }
 
-pub async fn function_handler(event: Request, pool_name: Option<String>) -> Result<impl IntoResponse, Error> {
+pub async fn function_handler(event: Request, pool_id: Option<String>) -> Result<impl IntoResponse, Error> {
     let body = event.payload::<MyPayload>()?;
 
     let response = Response::builder()
@@ -61,7 +61,7 @@ pub async fn function_handler(event: Request, pool_name: Option<String>) -> Resu
               "message": "Hello World",
               "payload": body,
               "payload-exists": body.is_some(),
-              "pool-name": pool_name
+              "pool-id": pool_id
             })
             .to_string(),
         )
@@ -91,7 +91,7 @@ pub struct MyPayload {
 // Lists your user pools.
 // snippet-start:[cognitoidentityprovider.rust.list-user-pools]
 async fn show_pools(client: &Client) -> Result<Option<String>, Error> {
-    let mut first_pool_name: Option<String> = None;
+    let mut pool_id: Option<String> = None;
     let response = client.list_user_pools().max_results(10).send().await?;
     if let Some(pools) = response.user_pools() {
         println!("User pools:");
@@ -109,7 +109,7 @@ async fn show_pools(client: &Client) -> Result<Option<String>, Error> {
                 pool.creation_date().unwrap().to_chrono_utc()
             );
             println!();
-            first_pool_name = Some(pool.name);
+            pool_id = pool.id();
         }
     } else {
         println!("User pools not exists");    
