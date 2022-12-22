@@ -18,6 +18,13 @@ async fn main() -> Result<(), Error> {
     let region_provider = RegionProviderChain::first_try(region.map(Region::new))
         .or_default_provider()
         .or_else(Region::new("us-east-1"));
+
+    println!("verbose is {}", verbose);
+    println!("Cognito client version: {}", PKG_VERSION);
+    println!(
+            "Region:                 {}",
+            region_provider.region().await.unwrap().as_ref()
+    );
     println!();
 
     if verbose {
@@ -31,11 +38,12 @@ async fn main() -> Result<(), Error> {
     }
 
     let shared_config = aws_config::from_env().region(region_provider).load().await;
+    let client = Client::new(&shared_config);
 
-    run(service_fn(function_handler)).await
+    run(service_fn(|event|function_handler(event, client))).await
 }
 
-pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
+pub async fn function_handler(event: Request, client: &Client) -> Result<impl IntoResponse, Error> {
     let body = event.payload::<MyPayload>()?;
 
     let response = Response::builder()
@@ -51,6 +59,9 @@ pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error
         )
         .map_err(Box::new)?;
 
+
+    show_pools(&client).await;
+    
     Ok(response)
 }
 
