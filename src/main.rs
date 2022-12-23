@@ -109,7 +109,7 @@ async fn show_pools(client: &Client) -> Result<Option<String>, Error> {
                 pool.creation_date().unwrap().to_chrono_utc()
             );
             println!();
-            pool_id = pool.id()map(|it|it.to_string());
+            pool_id = pool.id().map(|it|it.to_string());
         }
     } else {
         println!("User pools not exists");    
