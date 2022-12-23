@@ -42,7 +42,7 @@ async fn main() -> Result<(), Error> {
     }
     */
 
-    let shared_config = aws_config::from_env().region(region_provider).load().await?;
+    let shared_config = aws_config::from_env().region(region_provider).load().await;
     let client = Client::new(&shared_config);
 
     let pool_id = show_pools(&client).await?;
@@ -109,7 +109,7 @@ async fn show_pools(client: &Client) -> Result<Option<String>, Error> {
                 pool.creation_date().unwrap().to_chrono_utc()
             );
             println!();
-            pool_id = pool.id().to_string();
+            pool_id = pool.id()map(|it|it.to_string());
         }
     } else {
         println!("User pools not exists");    
