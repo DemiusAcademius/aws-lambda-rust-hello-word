@@ -81,7 +81,7 @@ pub async fn function_handler(
 
     let user = client
         .admin_get_user()
-        .set_user_pool_id(pool_id)
+        .set_user_pool_id(pool_id.clone())
         .set_username(Some(payload.username))
         .send()
         .await?;
