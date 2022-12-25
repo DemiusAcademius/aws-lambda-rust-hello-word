@@ -95,7 +95,7 @@ pub async fn function_handler(
             json!({
               "message": "Hello World",
               "pool-id": pool_id,
-              "user-status": format!({:?}, status)
+              "user-status": format!("{:?}", status)
             })
             .to_string(),
         )

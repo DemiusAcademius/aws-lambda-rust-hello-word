@@ -3,7 +3,7 @@ POST https://ugju3p38s1.execute-api.us-east-1.amazonaws.com/dev/aws-lambda-rust-
 content-type: application/json
 
 {
-    "username": "sample",
+    "username": "demiusacademius",
     "password": "Wed, 21 Oct 2015 18:27:50 GMT"
 }
 
