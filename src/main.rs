@@ -61,7 +61,7 @@ pub async fn function_handler(
     let Some(pool_id) = pool_id else {
         let response = Response::builder()
             .status(StatusCode::INTERNAL_SERVER_ERROR)
-            .body("UsersPoolNotDOunf")
+            .body("UsersPoolNotDOunf".to_string())
             .map_err(Box::new)?;
         return Ok(response);
     };
@@ -72,7 +72,7 @@ pub async fn function_handler(
     let Some(payload) = body else {
         let response = Response::builder()
             .status(StatusCode::BAD_REQUEST)
-            .body("PayloadDoesntExist")
+            .body("PayloadDoesntExist".to_string())
             .map_err(Box::new)?;
         return Ok(response);
     };
