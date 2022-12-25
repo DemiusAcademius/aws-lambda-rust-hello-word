@@ -26,8 +26,8 @@ async fn main() -> Result<(), Error> {
     // println!("verbose is {}", verbose);
     println!("Cognito client version: {}", PKG_VERSION);
     println!(
-            "Region:                 {}",
-            region_provider.region().await.unwrap().as_ref()
+        "Region:                 {}",
+        region_provider.region().await.unwrap().as_ref()
     );
     println!();
     /*
@@ -47,11 +47,36 @@ async fn main() -> Result<(), Error> {
 
     let pool_id = show_pools(&client).await?;
 
-    run(service_fn(|event: Request|function_handler(event, pool_id.clone()))).await
+    run(service_fn(|event: Request| {
+        function_handler(event, pool_id.clone(), &client)
+    }))
+    .await
 }
 
-pub async fn function_handler(event: Request, pool_id: Option<String>) -> Result<impl IntoResponse, Error> {
+pub async fn function_handler(
+    event: Request,
+    pool_id: Option<String>,
+    client: &Client,
+) -> Result<impl IntoResponse, Error> {
+    let Some(pool_id) = pool_id else {
+        return Ok(Response::builder().status(StatusCode::INTERNAL_SERVER_ERROR).body("UsersPoolNotDOunf"));
+    };
+
+    let methiod = event.method();
     let body = event.payload::<MyPayload>()?;
+
+    let Some(payload) = body else {
+        return Ok(Response::builder().status(StatusCode::BAD_REQUEST).body("PayloadDoesntExist"));
+    };
+
+    let user = client
+        .admin_get_user()
+        .set_user_pool_id(&pool_id)
+        .set_username(Some(payload.username))
+        .send()
+        .await?;
+
+    let status = user.user_status();
 
     let response = Response::builder()
         .status(StatusCode::OK)
@@ -59,9 +84,8 @@ pub async fn function_handler(event: Request, pool_id: Option<String>) -> Result
         .body(
             json!({
               "message": "Hello World",
-              "payload": body,
-              "payload-exists": body.is_some(),
-              "pool-id": pool_id
+              "pool-id": pool_id,
+              "user-status": status
             })
             .to_string(),
         )
@@ -69,7 +93,6 @@ pub async fn function_handler(event: Request, pool_id: Option<String>) -> Result
 
     Ok(response)
 }
-
 
 #[derive(Debug, StructOpt)]
 struct Opt {
@@ -84,8 +107,8 @@ struct Opt {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct MyPayload {
-    pub prop1: String,
-    pub prop2: String,
+    pub username: String,
+    pub password: Option<String>,
 }
 
 // Lists your user pools.
@@ -109,10 +132,10 @@ async fn show_pools(client: &Client) -> Result<Option<String>, Error> {
                 pool.creation_date().unwrap().to_chrono_utc()
             );
             println!();
-            pool_id = pool.id().map(|it|it.to_string());
+            pool_id = pool.id().map(|it| it.to_string());
         }
     } else {
-        println!("User pools not exists");    
+        println!("User pools not exists");
     }
     println!("Next token: {}", response.next_token().unwrap_or_default());
 
