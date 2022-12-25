@@ -59,14 +59,22 @@ pub async fn function_handler(
     client: &Client,
 ) -> Result<impl IntoResponse, Error> {
     let Some(pool_id) = pool_id else {
-        return Ok(Response::builder().status(StatusCode::INTERNAL_SERVER_ERROR).body("UsersPoolNotDOunf"));
+        let response = Response::builder()
+            .status(StatusCode::INTERNAL_SERVER_ERROR)
+            .body("UsersPoolNotDOunf")
+            .map_err(Box::new)?;
+        return Ok(response);
     };
 
     let methiod = event.method();
     let body = event.payload::<MyPayload>()?;
 
     let Some(payload) = body else {
-        return Ok(Response::builder().status(StatusCode::BAD_REQUEST).body("PayloadDoesntExist"));
+        let response = Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body("PayloadDoesntExist")
+            .map_err(Box::new)?;
+        return Ok(response);
     };
 
     let user = client
