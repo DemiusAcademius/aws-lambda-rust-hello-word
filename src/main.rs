@@ -58,6 +58,7 @@ pub async fn function_handler(
     pool_id: Option<String>,
     client: &Client,
 ) -> Result<impl IntoResponse, Error> {
+    /*
     let Some(pool_id) = pool_id else {
         let response = Response::builder()
             .status(StatusCode::INTERNAL_SERVER_ERROR)
@@ -65,6 +66,7 @@ pub async fn function_handler(
             .map_err(Box::new)?;
         return Ok(response);
     };
+     */
 
     let methiod = event.method();
     let body = event.payload::<MyPayload>()?;
@@ -79,7 +81,7 @@ pub async fn function_handler(
 
     let user = client
         .admin_get_user()
-        .set_user_pool_id(&pool_id)
+        .set_user_pool_id(pool_id)
         .set_username(Some(payload.username))
         .send()
         .await?;
@@ -93,7 +95,7 @@ pub async fn function_handler(
             json!({
               "message": "Hello World",
               "pool-id": pool_id,
-              "user-status": status
+              "user-status": format!({:?}, status)
             })
             .to_string(),
         )
