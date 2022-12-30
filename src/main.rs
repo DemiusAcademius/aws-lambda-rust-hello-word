@@ -146,7 +146,7 @@ pub async fn function_handler(
 
     let response = Response::builder()
         .status(StatusCode::METHOD_NOT_ALLOWED)
-        .body(())
+        .body("".to_owned())
         .unwrap();
     Ok(response)
 }
