@@ -8,3 +8,5 @@ content-type: application/json
 }
 
 ####
+
+GET https://ugju3p38s1.execute-api.us-east-1.amazonaws.com/dev/aws-lambda-rust-hello-word?username=demiusacademius HTTP/1.1

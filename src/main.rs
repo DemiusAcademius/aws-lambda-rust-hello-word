@@ -146,7 +146,8 @@ pub async fn function_handler(
 
     let response = Response::builder()
         .status(StatusCode::METHOD_NOT_ALLOWED)
-        .map_err(Box::new)?;
+        .body(())
+        .unwrap();
     Ok(response)
 }
 
