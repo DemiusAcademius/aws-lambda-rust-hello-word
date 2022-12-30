@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use aws_config::meta::region::RegionProviderChain;
-use aws_sdk_cognitoidentityprovider::{Client, Region, PKG_VERSION};
+use aws_sdk_cognitoidentityprovider::{model::AuthFlowType, Client, Region, PKG_VERSION};
 use aws_smithy_types_convert::date_time::DateTimeExt;
 
 use lambda_http::{http::StatusCode, run, service_fn, Error, IntoResponse, Request, RequestExt};
@@ -58,18 +60,16 @@ pub async fn function_handler(
     pool_id: Option<String>,
     client: &Client,
 ) -> Result<impl IntoResponse, Error> {
-    /*
-    let Some(pool_id) = pool_id else {
+    if pool_id.is_none() {
         let response = Response::builder()
             .status(StatusCode::INTERNAL_SERVER_ERROR)
             .body("UsersPoolNotDOunf".to_string())
             .map_err(Box::new)?;
         return Ok(response);
-    };
-     */
+    }
 
-    let methiod = event.method();
-    let body = event.payload::<MyPayload>()?;
+    let method = event.method();
+    let body = event.payload::<AuthenticationPayload>()?;
 
     let Some(payload) = body else {
         let response = Response::builder()
@@ -79,29 +79,74 @@ pub async fn function_handler(
         return Ok(response);
     };
 
-    let user = client
-        .admin_get_user()
-        .set_user_pool_id(pool_id.clone())
-        .set_username(Some(payload.username))
-        .send()
-        .await?;
+    if method == http::Method::GET {
+        let user = client
+            .admin_get_user()
+            .set_user_pool_id(pool_id.clone())
+            .set_username(Some(payload.username))
+            .send()
+            .await?;
 
-    let status = user.user_status();
+        let status = user.user_status();
+
+        let response = Response::builder()
+            .status(StatusCode::OK)
+            .header("Content-Type", "application/json")
+            .body(
+                json!({
+                  "message": "Hello World",
+                  "pool-id": pool_id,
+                  "user-enabled": user.enabled(),
+                  "user-status": format!("{:?}", status)
+                })
+                .to_string(),
+            )
+            .map_err(Box::new)?;
+
+        return Ok(response);
+    }
+
+    if method == http::Method::POST {
+        let Some(password) = payload.password else {
+            let response = Response::builder()
+                .status(StatusCode::BAD_REQUEST)
+                .body("NotFoundPasswordForAUth".to_string())
+                .map_err(Box::new)?;
+            return Ok(response);
+        };
+        // authenticate
+        let auth_params = HashMap::from([
+            ("USERNAME".to_string(), payload.username),
+            ("PASSWORD".to_string(), password),
+        ]);
+        // USERNAME, PASSWORD
+        let auth_initiate = client
+            .admin_initiate_auth()
+            .set_user_pool_id(pool_id.clone())
+            .set_auth_flow(Some(AuthFlowType::UserPasswordAuth))
+            .set_auth_parameters(Some(auth_params))
+            .send()
+            .await?;
+
+        let response = Response::builder()
+            .status(StatusCode::OK)
+            .header("Content-Type", "application/json")
+            .body(
+                json!({
+                  "auth-result": format!("{:?}", auth_initiate.authentication_result()),
+                  "challenge-name": format!("{:?}", auth_initiate.challenge_name()),
+                  "session": auth_initiate.session().to_owned()
+                })
+                .to_string(),
+            )
+            .map_err(Box::new)?;
+
+        return Ok(response);
+    }
 
     let response = Response::builder()
-        .status(StatusCode::OK)
-        .header("Content-Type", "application/json")
-        .body(
-            json!({
-              "message": "Hello World",
-              "pool-id": pool_id,
-              "user-enabled": user.enabled(),
-              "user-status": format!("{:?}", status)
-            })
-            .to_string(),
-        )
+        .status(StatusCode::METHOD_NOT_ALLOWED)
         .map_err(Box::new)?;
-
     Ok(response)
 }
 
@@ -117,7 +162,7 @@ struct Opt {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct MyPayload {
+pub struct AuthenticationPayload {
     pub username: String,
     pub password: Option<String>,
 }
