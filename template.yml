@@ -15,6 +15,7 @@ Resources:
       # Function's execution role
       Policies:
         - AmazonCognitoReadOnly
+        - AmazonESCognitoAccess  #  cognito-idp:AdminInitiateAuth
         - AWSLambdaBasicExecutionRole
         - AWSLambda_ReadOnlyAccess
         - AWSXrayWriteOnlyAccess
