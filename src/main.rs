@@ -126,6 +126,7 @@ pub async fn function_handler(
         let auth_initiate = client
             .admin_initiate_auth()
             .set_user_pool_id(pool_id.clone())
+            .set_client_id(Some("l0nvvf5mvd69fbvcuhn3kfgps".to_string()))
             .set_auth_flow(Some(AuthFlowType::UserPasswordAuth))
             .set_auth_parameters(Some(auth_params))
             .send()
