@@ -69,21 +69,21 @@ pub async fn function_handler(
     }
 
     let method = event.method();
-    let body = event.payload::<AuthenticationPayload>()?;
-
-    let Some(payload) = body else {
-        let response = Response::builder()
-            .status(StatusCode::BAD_REQUEST)
-            .body("PayloadDoesntExist".to_string())
-            .map_err(Box::new)?;
-        return Ok(response);
-    };
 
     if method == http::Method::GET {
+        let qp = event.query_string_parameters();
+        let username = qp.first("name");
+        let Some(username) = username else {
+            let response = Response::builder()
+                .status(StatusCode::BAD_REQUEST)
+                .body("NameParamDoesNtExist".to_string())
+                .map_err(Box::new)?;
+            return Ok(response);
+        };
         let user = client
             .admin_get_user()
             .set_user_pool_id(pool_id.clone())
-            .set_username(Some(payload.username))
+            .set_username(Some(username.to_string()))
             .send()
             .await?;
 
@@ -107,17 +107,20 @@ pub async fn function_handler(
     }
 
     if method == http::Method::POST {
-        let Some(password) = payload.password else {
+        let body = event.payload::<AuthenticationPayload>()?;
+
+        let Some(payload) = body else {
             let response = Response::builder()
                 .status(StatusCode::BAD_REQUEST)
-                .body("NotFoundPasswordForAUth".to_string())
+                .body("PayloadDoesntExist".to_string())
                 .map_err(Box::new)?;
             return Ok(response);
         };
+
         // authenticate
         let auth_params = HashMap::from([
             ("USERNAME".to_string(), payload.username),
-            ("PASSWORD".to_string(), password),
+            ("PASSWORD".to_string(), payload.password),
         ]);
         // USERNAME, PASSWORD
         let auth_initiate = client
@@ -165,7 +168,7 @@ struct Opt {
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct AuthenticationPayload {
     pub username: String,
-    pub password: Option<String>,
+    pub password: String,
 }
 
 // Lists your user pools.
