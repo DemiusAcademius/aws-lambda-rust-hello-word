@@ -72,7 +72,7 @@ pub async fn function_handler(
 
     if method == http::Method::GET {
         let qp = event.query_string_parameters();
-        let username = qp.first("name");
+        let username = qp.first("username");
         let Some(username) = username else {
             let response = Response::builder()
                 .status(StatusCode::BAD_REQUEST)
